@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Live Rumble Stream</title>
+  <style>
+    body {
+      margin: 0;
+      background-color: black;
+      background-image: url(/background.jpg);
+      background-size: contain;
+      display: flex;
+      justify-content: center;
+    }
+
+    video ~ * {
+      display: none !important;
+    }
+
+    #rumble_container>.player {
+      height: 100vh;
+      display: block;
+      aspect-ratio: 16 / 9;
+    }
+
+    #liveBanner {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: rgba(255, 0, 0, 0.8);
+      color: white;
+      text-align: center;
+      font-weight: bold;
+      padding: 8px;
+      z-index: 9999;
+      font-family: sans-serif;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div style="z-index:10;display:flex;position:fixed;inset:0"></div>
+  <span id="rumble_container"></span>
+  <div id="liveBanner">🔴 Live Stream Playing</div>
+
+  <script>
+    // Rumble embed script loader
+    !function(r,u,m,b,l,e){
+      r._Rumble=b;
+      r[b]||(r[b]=function(){
+        (r[b]._=r[b]._||[]).push(arguments);
+        if(r[b]._.length==1){
+          l=u.createElement(m),e=u.getElementsByTagName(m)[0];
+          l.async=1;
+          l.src="https://rumble.com/embedJS/u3q6otu" + 
+                (arguments[1].video ? '.' + arguments[1].video : '') +
+                "/?args=" + encodeURIComponent(JSON.stringify([].slice.apply(arguments)));
+          e.parentNode.insertBefore(l,e);
+        }
+      });
+    }(window, document, "script", "Rumble");
+  </script>
+
+  <script>
+    const container = document.getElementById("rumble_container");
+
+    function playStream(embedCode,Time) {
+      console.log("playing", embedCode, "at", Time)
+      console.log('[CLIENT] Playing embed:', embedCode);
+      container.innerHTML = `<div class="player" id="rumble_${embedCode}"></div>`;
+      Rumble("play", { video: embedCode, div: `rumble_${embedCode}`,startTime : Time });
+    }
+
+    function forcePlayAllVideos() {
+      const videos = document.querySelectorAll('video');
+      videos.forEach(video => {
+        if (video.paused) {
+          video.muted = true;
+          video.click();
+        }
+        video.muted = false;
+      });
+    }
+
+    setInterval(forcePlayAllVideos, 1);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) forcePlayAllVideos();
+    });
+    window.addEventListener('focus', forcePlayAllVideos);
+
+    // WebSocket connection
+    const socket = new WebSocket(`ws://${location.host}`);
+
+    socket.onopen = () => {
+      console.log('[CLIENT] WebSocket connected');
+    };
+
+    socket.onmessage = (event) => {
+      try {
+        const msg = JSON.parse(event.data);
+        if (msg.type === 'update') {
+          console.log('[CLIENT] Received update with embed code:', msg.embedCode);
+          playStream(msg.embedCode, msg.startAtSec);
+          document.querySelector("#liveBanner").style.display=(msg.isLive?"block":"none")
+        }
+      } catch (e) {
+        console.error('[CLIENT] Failed to parse WebSocket message:', e);
+      }
+    };
+
+    socket.onclose = () => {
+      console.warn('[CLIENT] WebSocket connection closed');
+    };
+
+    socket.onerror = (err) => {
+      console.error('[CLIENT] WebSocket error:', err);
+    };
+  </script>
+</body>
+</html>

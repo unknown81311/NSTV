@@ -89,7 +89,9 @@
     window.addEventListener('focus', forcePlayAllVideos);
 
     // WebSocket connection
-    const socket = new WebSocket(`ws://${location.host}`);
+    const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+    const socket = new WebSocket(`${protocol}://${location.host}`);
+
 
     socket.onopen = () => {
       console.log('[CLIENT] WebSocket connected');

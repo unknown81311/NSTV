@@ -77,7 +77,7 @@
       videos.forEach(video => {
         if (video.paused) {
           video.muted = true;
-          video.click();
+          video.play();
         }
         video.muted = false;
       });

@@ -67,6 +67,9 @@ let savedFallbackState = null; // { fallbackIdx, startAtSec } — used to resume
 let lastEmbedCode = null;
 let lastPartIndex = null;
 
+// new: track when a live stream started (Date.now())
+let liveStartTimestamp = null; // when a live stream started (ms since epoch)
+
 // ------------------------
 // HELPERS
 // ------------------------
@@ -278,6 +281,7 @@ async function pollLive() {
         currentLiveIdx = i;
         currentCode = code;
         startAtSec = 0; // for live, we use 0 (clients treat live as starting now)
+        liveStartTimestamp = Date.now(); // <-- set live start timestamp
         // Reset lastPartIndex because live is not part-indexed fallback content
         lastPartIndex = null;
 
@@ -297,6 +301,7 @@ async function pollLive() {
 
       isLive = false;
       currentLiveIdx = null;
+      liveStartTimestamp = null; // <-- clear live start timestamp
 
       // Resume saved fallback if present, otherwise startFallback() picks a random one
       const resume = savedFallbackState || null;
@@ -315,22 +320,40 @@ async function pollLive() {
 // WebSocket connections
 // ------------------------
 
+// When a client connects we immediately send current state.
+// Additionally we log each join (client IP, embed, current video time, and wall-clock timestamp).
 wss.on('connection', ws => {
-  // When a client connects we should immediately send current state.
-  // If we're live, send the live embed and startAtSec (0).
-  // If in fallback, we must compute current part & offset to tell client.
   try {
+    // compute playback time for the client (seconds into the current part or live elapsed)
+    let videoTimeSec = 0;
+    let currentEmbedForLog = currentCode;
+
     if (isLive) {
+      // for live, compute elapsed since live started (fallback code used startAtSec=0 previously)
+      if (liveStartTimestamp) {
+        videoTimeSec = Math.floor((Date.now() - liveStartTimestamp) / 1000);
+      } else {
+        videoTimeSec = 0;
+      }
+
       ws.send(JSON.stringify({
         type: 'update',
         isLive: true,
         embedCode: currentCode,
-        startAtSec: startAtSec // for live we set to 0
+        startAtSec: videoTimeSec // clients treat live as starting now (we provide elapsed)
       }));
     } else {
-      // fallback: compute current part & offset within active fallback entry
+      // fallback: ensure we have a fallback index
+      if (fallbackIdx === null) {
+        // fallback hasn't been initialized yet — default to first entry
+        fallbackIdx = 0;
+        startAtSec = 0;
+      }
       const entry = DEFAULT_EMBED[fallbackIdx];
       const { embedCode, startAtSec: partStart } = getCurrentPartWithIndex(entry, startAtSec);
+      currentEmbedForLog = embedCode;
+      videoTimeSec = partStart;
+
       ws.send(JSON.stringify({
         type: 'update',
         isLive: false,
@@ -338,6 +361,10 @@ wss.on('connection', ws => {
         startAtSec: partStart
       }));
     }
+
+    // log the join event: IP (if available), embed, video time, and timestamp
+    const clientIp = (ws._socket && ws._socket.remoteAddress) ? ws._socket.remoteAddress : 'unknown';
+    console.log(`[JOIN] client=${clientIp} embed=${currentEmbedForLog} videoTime=${videoTimeSec}s at ${new Date().toISOString()}`);
   } catch (err) {
     console.error('[WS CONNECT ERR]', err && err.message);
   }

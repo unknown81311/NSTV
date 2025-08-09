@@ -14,7 +14,7 @@
     }
 
     video ~ * {
-      display: none !important;
+      /*display: none !important;*/
     }
 
     #rumble_container>.player {
@@ -24,6 +24,7 @@
     }
 
     #liveBanner {
+      display: none;
       position: fixed;
       bottom: 0;
       width: 100%;
@@ -39,7 +40,7 @@
   </style>
 </head>
 <body>
-  <div style="z-index:10;display:flex;position:fixed;inset:0"></div>
+  <!-- <div style="z-index:10;display:flex;position:fixed;inset:0"></div> -->
   <span id="rumble_container"></span>
   <div id="liveBanner">🔴 Live Stream Playing</div>
 

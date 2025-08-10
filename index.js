@@ -28,33 +28,33 @@ const STREAMERS = [
 
 // DEFAULT EMBED: includes normal entries and one virtual multi-part entry
 const DEFAULT_EMBED = [
-  {
-    embedCode: 'v6rjuwd', duration: 179
-  },{
-    embedCode: 'v6v4ulw', duration: 537
-  },{
-    embedCode: 'v6v3570', duration: 495
-  }
-  // { embedCode: 'v5fw85g', duration: 1662 },
-  // { embedCode: 'v6rdsa1', duration: 2564 },
-
-  // // Virtual video composed of 10 parts — treated as one long video
   // {
-  //   parts: [
-  //     { embedCode: "v4qrqb0", duration: 3676 },
-  //     { embedCode: "v4qskxc", duration: 3765 },
-  //     { embedCode: "v4qsxvl", duration: 2393 },
-  //     { embedCode: "v4qvssz", duration: 6398 },
-  //     { embedCode: "v4qy1kq", duration: 3204 },
-  //     { embedCode: "v4qycwe", duration: 3599 },
-  //     { embedCode: "v4qytxc", duration: 4110 },
-  //     { embedCode: "v4ryw8q", duration: 7513 },
-  //     { embedCode: "v4ryx1w", duration: 6970 },
-  //     { embedCode: "v4s31he", duration: 2142 }
-  //   ],
-  //   // sum durations (computed inline)
-  //   duration: 3676 + 3765 + 2393 + 6398 + 3204 + 3599 + 4110 + 7513 + 6970 + 2142
+  //   embedCode: 'v6rjuwd', duration: 179
+  // },{
+  //   embedCode: 'v6v4ulw', duration: 537
+  // },{
+  //   embedCode: 'v6v3570', duration: 495
   // }
+  { embedCode: 'v5fw85g', duration: 1662 },
+  { embedCode: 'v6rdsa1', duration: 2564 },
+
+  // Virtual video composed of 10 parts — treated as one long video
+  {
+    parts: [
+      { embedCode: "v4qrqb0", duration: 3676 },
+      { embedCode: "v4qskxc", duration: 3765 },
+      { embedCode: "v4qsxvl", duration: 2393 },
+      { embedCode: "v4qvssz", duration: 6398 },
+      { embedCode: "v4qy1kq", duration: 3204 },
+      { embedCode: "v4qycwe", duration: 3599 },
+      { embedCode: "v4qytxc", duration: 4110 },
+      { embedCode: "v4ryw8q", duration: 7513 },
+      { embedCode: "v4ryx1w", duration: 6970 },
+      { embedCode: "v4s31he", duration: 2142 }
+    ],
+    // sum durations (computed inline)
+    duration: 3676 + 3765 + 2393 + 6398 + 3204 + 3599 + 4110 + 7513 + 6970 + 2142
+  }
 ];
 
 // ------------------------
